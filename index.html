@@ -3,65 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bolt — your robot buddy</title>
+  <title>Bolt — your personal assistant</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app">
     <header class="top">
-      <h1>Bolt</h1>
-      <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">⚙︎</button>
+      <h1 id="name">Bolt</h1>
+      <div class="top-actions">
+        <button id="tasksBtn" class="icon-btn" title="To-do list" aria-label="To-do list">☑︎<span id="taskCount" class="badge" hidden></span></button>
+        <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">⚙︎</button>
+      </div>
     </header>
 
-    <section class="stage" aria-label="Bolt the robot">
-      <svg id="bolt" class="robot idle" viewBox="0 0 200 220" role="img" aria-label="Bolt">
-        <!-- antenna -->
-        <line x1="100" y1="44" x2="100" y2="18" class="antenna-stick"/>
-        <circle cx="100" cy="14" r="8" class="antenna-bulb"/>
-        <!-- ears -->
-        <rect x="18" y="92" width="16" height="44" rx="6" class="ear"/>
-        <rect x="166" y="92" width="16" height="44" rx="6" class="ear"/>
-        <!-- head -->
-        <rect x="32" y="44" width="136" height="136" rx="34" class="head"/>
-        <rect x="46" y="62" width="108" height="98" rx="24" class="face"/>
-        <!-- eyes -->
-        <g class="eyes">
-          <g class="eye eye-l"><circle cx="78" cy="100" r="13" class="eye-white"/><circle cx="78" cy="100" r="6" class="pupil"/></g>
-          <g class="eye eye-r"><circle cx="122" cy="100" r="13" class="eye-white"/><circle cx="122" cy="100" r="6" class="pupil"/></g>
-        </g>
-        <!-- cheeks -->
-        <circle cx="62" cy="126" r="6" class="cheek"/>
-        <circle cx="138" cy="126" r="6" class="cheek"/>
-        <!-- mouth -->
-        <rect x="80" y="130" width="40" height="12" rx="6" class="mouth"/>
-        <!-- body hint -->
-        <rect x="70" y="182" width="60" height="30" rx="10" class="neck"/>
-      </svg>
-      <p id="status" class="status">Say hi to Bolt!</p>
+    <section class="stage">
+      <div id="avatar" class="avatar idle" aria-label="Bolt">
+        <div class="face">
+          <img class="photo" src="assets/face.jpg" alt="">
+          <!-- copy of the photo, masked to the mouth, stretched to look like talking -->
+          <div class="mouth" id="mouth"><img src="assets/face.jpg" alt=""></div>
+          <!-- eyelids for blinking -->
+          <span class="lid lid-l"></span>
+          <span class="lid lid-r"></span>
+        </div>
+      </div>
+      <p id="status" class="status"></p>
     </section>
 
     <section id="log" class="log" aria-live="polite"></section>
 
     <form id="composer" class="composer">
       <button type="button" id="micBtn" class="icon-btn mic" title="Talk (needs a microphone)" aria-label="Talk" hidden>🎤</button>
-      <input id="input" type="text" placeholder="Type a message…" autocomplete="off" required>
+      <input id="input" type="text" placeholder="Ask Bolt anything…" autocomplete="off" required>
       <button type="submit" id="sendBtn" class="send">Send</button>
     </form>
   </main>
 
+  <dialog id="tasks">
+    <div class="panel">
+      <h2>To-do list</h2>
+      <form id="taskForm" class="task-add">
+        <input id="taskTitle" type="text" placeholder="New task…" required>
+        <input id="taskDue" type="datetime-local" title="Remind me at (optional)">
+        <button class="send">Add</button>
+      </form>
+      <ul id="taskList" class="task-list"></ul>
+      <p id="taskEmpty" class="hint">Nothing yet. Tell Bolt "remind me to…" or add one here.</p>
+      <div class="actions end"><button type="button" class="ghost" data-close>Close</button></div>
+    </div>
+  </dialog>
+
   <dialog id="settings">
-    <form method="dialog" class="settings">
+    <form method="dialog" class="panel">
       <h2>Settings</h2>
       <label>Claude API key
         <input id="keyInput" type="password" placeholder="sk-ant-…" autocomplete="off">
       </label>
-      <p class="hint">Get one at <b>console.anthropic.com</b> → API Keys. It's saved only in this browser.</p>
+      <p class="hint">Get one at <b>console.anthropic.com</b> → API Keys. Saved only in this browser.</p>
       <label>Voice
         <select id="voiceSelect"></select>
       </label>
       <label class="row"><input id="speakToggle" type="checkbox" checked> Speak replies aloud</label>
+
+      <h3>What Bolt remembers about you</h3>
+      <ul id="memoryList" class="memory-list"></ul>
+      <p id="memoryEmpty" class="hint">Nothing yet. Tell Bolt "remember that…"</p>
+
       <div class="actions">
-        <button type="button" id="clearBtn" class="ghost">Clear chat</button>
+        <button type="button" id="clearBtn" class="ghost">New chat</button>
         <button value="save" class="send">Save</button>
       </div>
     </form>
