@@ -25,7 +25,7 @@
 
     <form id="composer" class="composer">
       <button type="button" id="micBtn" class="icon-btn mic" title="Talk (needs a microphone)" aria-label="Talk" hidden>🎤</button>
-      <input id="input" type="text" placeholder="Ask Ron anything…" autocomplete="off" required>
+      <input id="input" type="text" dir="auto" placeholder="Ask Ron anything… · אפשר לשאול את רון כל דבר" autocomplete="off" required>
       <button type="submit" id="sendBtn" class="send">Send</button>
     </form>
   </main>
@@ -51,8 +51,17 @@
         <input id="keyInput" type="password" placeholder="sk-ant-…" autocomplete="off">
       </label>
       <p class="hint">Get one at <b>console.anthropic.com</b> → API Keys. Saved only in this browser.</p>
-      <label>Voice
+      <label>English voice
         <select id="voiceSelect"></select>
+      </label>
+      <label>Hebrew voice · קול בעברית
+        <select id="voiceSelectHe"></select>
+      </label>
+      <label>Microphone language · שפת המיקרופון
+        <select id="micLangSelect">
+          <option value="he-IL">עברית (Hebrew)</option>
+          <option value="en-US">English</option>
+        </select>
       </label>
       <label class="row"><input id="speakToggle" type="checkbox" checked> Speak replies aloud</label>
 

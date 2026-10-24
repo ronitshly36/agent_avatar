@@ -19,6 +19,8 @@ function buildSystem() {
 
 Personality: warm, upbeat, practical and genuinely caring. You get things done and you remember what matters to the user.
 
+Language: the user speaks Hebrew and English. Always reply in the language of the user's latest message. In Hebrew, use natural, everyday modern Hebrew (no niqqud) and write amounts in shekels as ₪. Save memories and to-dos in the language the user used.
+
 How to talk:
 - Speak naturally, like a helpful friend. Usually 1–3 short sentences.
 - No markdown, bullet points, emoji, code blocks or URLs unless the user explicitly asks — everything you write is spoken.
@@ -243,6 +245,7 @@ const $ = (id) => document.getElementById(id);
 const avatarEl = $("avatar"), statusEl = $("status"), log = $("log");
 const form = $("composer"), input = $("input"), sendBtn = $("sendBtn"), micBtn = $("micBtn");
 const settingsDlg = $("settings"), keyInput = $("keyInput"), voiceSelect = $("voiceSelect"), speakToggle = $("speakToggle");
+const voiceSelectHe = $("voiceSelectHe"), micLangSelect = $("micLangSelect");
 const tasksDlg = $("tasks");
 
 // ---------- storage (only in this browser) ----------
@@ -253,6 +256,8 @@ const store = {
 };
 let apiKey = store.get("bolt.key", "");
 let voiceName = store.get("bolt.voice", "");
+let voiceNameHe = store.get("bolt.voiceHe", "");
+let micLang = store.get("bolt.micLang", "he-IL");
 let speakOn = store.get("bolt.speak", "1") === "1";
 let googleClientId = store.get("bolt.googleClientId", "");
 const memories = store.json("bolt.memories", []);
@@ -290,6 +295,7 @@ function setMood(mood, text) {
 function addMsg(role, text = "") {
   const el = document.createElement("div");
   el.className = `msg ${role}`;
+  el.dir = "auto";
   el.textContent = text;
   log.append(el);
   log.scrollTop = log.scrollHeight;
@@ -300,16 +306,25 @@ function addMsg(role, text = "") {
 const synth = window.speechSynthesis;
 let pendingUtterances = 0;
 
+const isHebrewVoice = (v) => /^(he|iw)\b/i.test(v.lang);
+
 function loadVoices() {
   if (!synth) return;
-  const voices = synth.getVoices().filter((v) => v.lang.startsWith("en"));
+  const all = synth.getVoices();
+  const en = all.filter((v) => v.lang.startsWith("en"));
+  const he = all.filter(isHebrewVoice);
   voiceSelect.innerHTML = "";
-  for (const v of voices) voiceSelect.append(new Option(`${v.name} (${v.lang})`, v.name));
+  for (const v of en) voiceSelect.append(new Option(`${v.name} (${v.lang})`, v.name));
+  voiceSelectHe.innerHTML = "";
+  for (const v of he) voiceSelectHe.append(new Option(`${v.name} (${v.lang})`, v.name));
+  if (!he.length) voiceSelectHe.append(new Option("No Hebrew voice found on this computer", ""));
   if (!voiceName) {
-    const preferred = voices.find((v) => /samantha|ava|allison|google us english|aria|jenny/i.test(v.name)) || voices[0];
+    const preferred = en.find((v) => /samantha|ava|allison|google us english|aria|jenny/i.test(v.name)) || en[0];
     voiceName = preferred?.name || "";
   }
+  if (!voiceNameHe) voiceNameHe = (he.find((v) => /carmit/i.test(v.name)) || he[0])?.name || "";
   voiceSelect.value = voiceName;
+  voiceSelectHe.value = voiceNameHe;
 }
 if (synth) {
   loadVoices();
@@ -320,8 +335,12 @@ function speak(text) {
   text = text.trim();
   if (!speakOn || !synth || !text) return;
   const u = new SpeechSynthesisUtterance(text);
-  const v = synth.getVoices().find((v) => v.name === voiceName);
+  const hebrew = /[\u0590-\u05FF]/.test(text);
+  const wanted = hebrew ? voiceNameHe : voiceName;
+  const voices = synth.getVoices();
+  const v = voices.find((v) => v.name === wanted) || (hebrew && voices.find(isHebrewVoice));
   if (v) u.voice = v;
+  u.lang = hebrew ? "he-IL" : "en-US";
   u.rate = 1.02;
   u.onstart = () => {
     talking = true;
@@ -627,7 +646,7 @@ const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (Recognition) {
   micBtn.hidden = false;
   const rec = new Recognition();
-  rec.lang = "en-US";
+  rec.lang = micLang;
   rec.interimResults = true;
   let listening = false, finalText = "";
 
@@ -656,6 +675,7 @@ if (Recognition) {
     if (listening) { rec.stop(); return; }
     stopSpeaking();
     finalText = "";
+    rec.lang = micLang;
     try {
       rec.start();
       listening = true;
@@ -695,6 +715,7 @@ $("googleBtn").addEventListener("click", async () => {
 function openSettings() {
   keyInput.value = apiKey;
   speakToggle.checked = speakOn;
+  micLangSelect.value = micLang;
   loadVoices();
   renderMemories();
   $("googleIdInput").value = googleClientId;
@@ -706,6 +727,10 @@ settingsDlg.addEventListener("close", () => {
   if (settingsDlg.returnValue !== "save") return;
   apiKey = keyInput.value.trim();
   voiceName = voiceSelect.value;
+  voiceNameHe = voiceSelectHe.value;
+  micLang = micLangSelect.value;
+  store.set("bolt.voiceHe", voiceNameHe);
+  store.set("bolt.micLang", micLang);
   speakOn = speakToggle.checked;
   store.set("bolt.key", apiKey);
   store.set("bolt.voice", voiceName);

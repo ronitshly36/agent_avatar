@@ -6,6 +6,39 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { LipsyncEn } from "./vendor/lipsync-en.mjs";
 
 const lipsync = new LipsyncEn();
+const HEBREW = /[\u0590-\u05FF]/;
+
+// Hebrew letters -> Oculus visemes. Hebrew is written mostly without vowels,
+// so a vowel shape is inserted after consonants that aren't followed by one.
+const HE_VISEMES = {
+  "א": "aa", "ה": "aa", "ע": "aa", "ח": "kk",
+  "ב": "PP", "מ": "PP", "ם": "PP", "פ": "PP", "ף": "FF",
+  "ו": "U", "י": "I",
+  "ג": "kk", "כ": "kk", "ך": "kk", "ק": "kk",
+  "ד": "DD", "ת": "DD", "ט": "DD",
+  "ז": "SS", "ס": "SS", "צ": "SS", "ץ": "SS", "ש": "CH",
+  "ל": "nn", "נ": "nn", "ן": "nn", "ר": "RR",
+};
+const HE_VOWEL_LETTERS = new Set(["א", "ה", "ע", "ו", "י"]);
+
+function hebrewToVisemes(word) {
+  const letters = [...word.replace(/[\u0591-\u05C7]/g, "")].filter((c) => HE_VISEMES[c]);
+  const o = { visemes: [], times: [], durations: [] };
+  let t = 0, vowelToggle = false;
+  const push = (v, d) => {
+    if (o.visemes.at(-1) === v) { o.durations[o.durations.length - 1] += d; t += d; return; }
+    o.visemes.push(v); o.times.push(t); o.durations.push(d); t += d;
+  };
+  letters.forEach((c, i) => {
+    const vowel = HE_VOWEL_LETTERS.has(c);
+    push(HE_VISEMES[c], vowel ? 1.4 : 1);
+    const next = letters[i + 1];
+    if (!vowel && next && !HE_VOWEL_LETTERS.has(next)) {
+      push((vowelToggle = !vowelToggle) ? "aa" : "E", 1.2);
+    }
+  });
+  return o;
+}
 const UNIT_MS = 62;        // length of one lip-sync "unit" at speech rate 1
 const VISEME_WEIGHT = 0.85;
 
@@ -66,7 +99,7 @@ export class Avatar {
     this.utt = { text, rate, gotBoundary: false };
     this.queue = [];
     let t = performance.now();
-    for (const m of text.matchAll(/[A-Za-z0-9']+|[,;:]|[.!?]/g)) {
+    for (const m of text.matchAll(/[A-Za-z0-9'\u0590-\u05FF]+|[,;:]|[.!?]/g)) {
       const tok = m[0];
       if (tok === "," || tok === ";" || tok === ":") { t += 220 / rate; continue; }
       if (/[.!?]/.test(tok)) { t += 380 / rate; continue; }
@@ -86,7 +119,7 @@ export class Avatar {
     this.queue = this.queue.filter((q) => q.t0 < now);
     for (const q of this.queue) q.t1 = Math.min(q.t1, now + 40);
     const rest = this.utt.text.slice(charIndex);
-    const w = charLength ? rest.slice(0, charLength) : (rest.match(/^[A-Za-z0-9']+/) || [""])[0];
+    const w = charLength ? rest.slice(0, charLength) : (rest.match(/^[A-Za-z0-9'\u0590-\u05FF]+/) || [""])[0];
     if (w) this.#scheduleWord(w, now, this.utt.rate, false);
   }
 
@@ -96,8 +129,7 @@ export class Avatar {
   }
 
   #scheduleWord(word, start, rate, est) {
-    const text = lipsync.preProcessText(word);
-    const o = lipsync.wordsToVisemes(text);
+    const o = HEBREW.test(word) ? hebrewToVisemes(word) : lipsync.wordsToVisemes(lipsync.preProcessText(word));
     const unit = UNIT_MS / rate;
     let end = start;
     for (let i = 0; i < o.visemes.length; i++) {
