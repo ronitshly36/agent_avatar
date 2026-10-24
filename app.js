@@ -1,9 +1,9 @@
-// Bolt — a personal assistant with a 3D talking avatar, powered by Claude.
+// Ron — a personal assistant with a 3D talking avatar, powered by Claude.
 
 import { Avatar } from "./avatar.js";
 import * as G from "./google.js";
 
-const NAME = "Bolt";
+const NAME = "Ron";
 const MODEL = "claude-opus-5-5";
 const API_URL = "https://api.anthropic.com/v1/messages";
 
@@ -275,7 +275,7 @@ let busy = false;
 const face3d = new Avatar(avatarEl, "assets/avatar.glb");
 face3d.ready.catch((err) => {
   console.error(err);
-  statusEl.textContent = "Couldn't load the 3D avatar. Start Bolt with start.command (see README).";
+  statusEl.textContent = "Couldn't load the 3D avatar. Start Ron with start.command (see README).";
 });
 let talking = false;
 
@@ -348,7 +348,7 @@ function stopSpeaking() {
   talking = false;
 }
 
-// Speaks streamed text sentence by sentence so Bolt starts talking right away.
+// Speaks streamed text sentence by sentence so Ron starts talking right away.
 function sentenceSpeaker() {
   let buf = "";
   return {

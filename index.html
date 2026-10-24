@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bolt — your personal assistant</title>
+  <title>Ron — your personal assistant</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app">
     <header class="top">
-      <h1 id="name">Bolt</h1>
+      <h1 id="name">Ron</h1>
       <div class="top-actions">
         <button id="tasksBtn" class="icon-btn" title="To-do list" aria-label="To-do list">☑︎<span id="taskCount" class="badge" hidden></span></button>
         <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">⚙︎</button>
@@ -17,7 +17,7 @@
     </header>
 
     <section class="stage">
-      <div id="avatar" class="avatar idle" aria-label="Bolt, your 3D assistant"></div>
+      <div id="avatar" class="avatar idle" aria-label="Ron, your 3D assistant"></div>
       <p id="status" class="status"></p>
     </section>
 
@@ -25,7 +25,7 @@
 
     <form id="composer" class="composer">
       <button type="button" id="micBtn" class="icon-btn mic" title="Talk (needs a microphone)" aria-label="Talk" hidden>🎤</button>
-      <input id="input" type="text" placeholder="Ask Bolt anything…" autocomplete="off" required>
+      <input id="input" type="text" placeholder="Ask Ron anything…" autocomplete="off" required>
       <button type="submit" id="sendBtn" class="send">Send</button>
     </form>
   </main>
@@ -39,7 +39,7 @@
         <button class="send">Add</button>
       </form>
       <ul id="taskList" class="task-list"></ul>
-      <p id="taskEmpty" class="hint">Nothing yet. Tell Bolt "remind me to…" or add one here.</p>
+      <p id="taskEmpty" class="hint">Nothing yet. Tell Ron "remind me to…" or add one here.</p>
       <div class="actions end"><button type="button" class="ghost" data-close>Close</button></div>
     </div>
   </dialog>
@@ -66,9 +66,9 @@
       </div>
       <p class="hint">See "Connect Gmail &amp; Drive" in the README for how to get a Client ID.</p>
 
-      <h3>What Bolt remembers about you</h3>
+      <h3>What Ron remembers about you</h3>
       <ul id="memoryList" class="memory-list"></ul>
-      <p id="memoryEmpty" class="hint">Nothing yet. Tell Bolt "remember that…"</p>
+      <p id="memoryEmpty" class="hint">Nothing yet. Tell Ron "remember that…"</p>
 
       <div class="actions">
         <button type="button" id="clearBtn" class="ghost">New chat</button>
