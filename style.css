@@ -145,4 +145,8 @@ dialog::backdrop { background: rgb(0 0 0 / .4); }
 .t-body, .m-text { flex: 1; min-width: 0; }
 .t-due { display: block; font-size: .8rem; color: var(--muted); }
 .t-due.late { color: #ef4444; }
+.google-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.google-row .hint { margin: 0; }
+.google-row .ghost { padding: 8px 14px; }
+.google-row .ghost:disabled { opacity: .5; cursor: default; }
 .x { border: 0; background: transparent; color: var(--muted); font-size: 1.1rem; cursor: pointer; }

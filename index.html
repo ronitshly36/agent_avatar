@@ -56,6 +56,16 @@
       </label>
       <label class="row"><input id="speakToggle" type="checkbox" checked> Speak replies aloud</label>
 
+      <h3>Gmail &amp; Google Drive</h3>
+      <label>Google Client ID
+        <input id="googleIdInput" type="text" placeholder="…apps.googleusercontent.com" autocomplete="off">
+      </label>
+      <div class="google-row">
+        <span id="googleStatus" class="hint"></span>
+        <button type="button" id="googleBtn" class="ghost">Connect Google</button>
+      </div>
+      <p class="hint">See "Connect Gmail &amp; Drive" in the README for how to get a Client ID.</p>
+
       <h3>What Bolt remembers about you</h3>
       <ul id="memoryList" class="memory-list"></ul>
       <p id="memoryEmpty" class="hint">Nothing yet. Tell Bolt "remember that…"</p>
@@ -67,6 +77,7 @@
     </form>
   </dialog>
 
+  <script src="https://accounts.google.com/gsi/client" async></script>
   <script type="importmap">
     {
       "imports": {
