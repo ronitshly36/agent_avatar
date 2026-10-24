@@ -17,16 +17,7 @@
     </header>
 
     <section class="stage">
-      <div id="avatar" class="avatar idle" aria-label="Bolt">
-        <div class="face">
-          <img class="photo" src="assets/face.jpg" alt="">
-          <!-- copy of the photo, masked to the mouth, stretched to look like talking -->
-          <div class="mouth" id="mouth"><img src="assets/face.jpg" alt=""></div>
-          <!-- eyelids for blinking -->
-          <span class="lid lid-l"></span>
-          <span class="lid lid-r"></span>
-        </div>
-      </div>
+      <div id="avatar" class="avatar idle" aria-label="Bolt, your 3D assistant"></div>
       <p id="status" class="status"></p>
     </section>
 
@@ -76,6 +67,14 @@
     </form>
   </dialog>
 
-  <script src="app.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

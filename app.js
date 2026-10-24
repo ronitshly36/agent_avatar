@@ -1,4 +1,6 @@
-// Bolt — a personal assistant with a talking face, powered by Claude.
+// Bolt — a personal assistant with a 3D talking avatar, powered by Claude.
+
+import { Avatar } from "./avatar.js";
 
 const NAME = "Bolt";
 const MODEL = "claude-opus-5-5";
@@ -12,7 +14,7 @@ function buildSystem() {
   const todo = open.length
     ? open.map((t) => `- [${t.id}] ${t.title}${t.due ? ` (due ${new Date(t.due).toLocaleString()})` : ""}`).join("\n")
     : "(empty)";
-  return `You are ${NAME}, the user's personal assistant. You appear to them as a friendly, warm woman's face on screen, and your replies are read aloud by a text-to-speech voice.
+  return `You are ${NAME}, the user's personal assistant. You appear to them as a friendly 3D animated woman on screen, and your replies are read aloud by a text-to-speech voice.
 
 Personality: warm, upbeat, practical and genuinely caring. You get things done and you remember what matters to the user.
 
@@ -156,7 +158,7 @@ function runTool(name, input) {
 
 // ---------- elements ----------
 const $ = (id) => document.getElementById(id);
-const avatar = $("avatar"), mouth = $("mouth"), statusEl = $("status"), log = $("log");
+const avatarEl = $("avatar"), statusEl = $("status"), log = $("log");
 const form = $("composer"), input = $("input"), sendBtn = $("sendBtn"), micBtn = $("micBtn");
 const settingsDlg = $("settings"), keyInput = $("keyInput"), voiceSelect = $("voiceSelect"), speakToggle = $("speakToggle");
 const tasksDlg = $("tasks");
@@ -186,35 +188,20 @@ const messages = [];
 let system = null;
 let busy = false;
 
-// ---------- face ----------
+// ---------- avatar ----------
+const face3d = new Avatar(avatarEl, "assets/avatar.glb");
+face3d.ready.catch((err) => {
+  console.error(err);
+  statusEl.textContent = "Couldn't load the 3D avatar. Start Bolt with start.command (see README).";
+});
+let talking = false;
+
 function setMood(mood, text) {
-  avatar.classList.remove("idle", "thinking", "speaking", "listening");
-  avatar.classList.add(mood);
+  avatarEl.classList.remove("idle", "thinking", "speaking", "listening");
+  avatarEl.classList.add(mood);
+  face3d.setMood(mood);
   if (text !== undefined) statusEl.textContent = text;
 }
-
-function scheduleBlink() {
-  setTimeout(() => {
-    avatar.classList.add("blink");
-    setTimeout(() => avatar.classList.remove("blink"), 130);
-    scheduleBlink();
-  }, 2500 + Math.random() * 3500);
-}
-scheduleBlink();
-
-// Mouth: eases toward a random openness while talking, closed otherwise.
-let talking = false, mouthTarget = 0, mouthVal = 0, nextShape = 0;
-function animateMouth(now) {
-  if (talking && now > nextShape) {
-    mouthTarget = Math.random() < 0.18 ? 0 : 0.35 + Math.random() * 0.65;
-    nextShape = now + 70 + Math.random() * 90;
-  }
-  if (!talking) mouthTarget = 0;
-  mouthVal += (mouthTarget - mouthVal) * 0.35;
-  mouth.style.transform = `scaleY(${1 + mouthVal * 0.15})`;
-  requestAnimationFrame(animateMouth);
-}
-requestAnimationFrame(animateMouth);
 
 // ---------- chat log ----------
 function addMsg(role, text = "") {
@@ -253,8 +240,14 @@ function speak(text) {
   const v = synth.getVoices().find((v) => v.name === voiceName);
   if (v) u.voice = v;
   u.rate = 1.02;
-  u.onstart = () => { talking = true; setMood("speaking", `${NAME} is talking…`); };
+  u.onstart = () => {
+    talking = true;
+    face3d.startUtterance(text, u.rate);
+    setMood("speaking", `${NAME} is talking…`);
+  };
+  u.onboundary = (e) => { if (e.name === "word") face3d.word(e.charIndex, e.charLength); };
   u.onend = u.onerror = () => {
+    face3d.endUtterance();
     pendingUtterances = Math.max(0, pendingUtterances - 1);
     if (pendingUtterances === 0) {
       talking = false;
@@ -267,6 +260,7 @@ function speak(text) {
 
 function stopSpeaking() {
   if (synth) synth.cancel();
+  face3d.endUtterance();
   pendingUtterances = 0;
   talking = false;
 }

@@ -1,22 +1,22 @@
 # Bolt: your personal assistant
 
-Bolt is a personal assistant with a talking face. It answers using Claude (`claude-opus-5-5`), speaks its replies out loud, blinks, and moves its mouth while it talks.
+Bolt is a personal assistant with a **3D animated avatar**. It answers using Claude (`claude-opus-5-5`) and speaks its replies out loud. While it talks, the avatar's lips match the words. It also blinks, moves its head naturally, and changes expression while thinking, listening or talking.
 
 What Bolt can do:
 - **Chat and answer questions**, with spoken replies.
 - **Remember things about you** between chats. Say "remember that my sister's birthday is May 3".
-- **Keep a to-do list with reminders.** Say "remind me to call mom tomorrow at 6pm". At that time Bolt shows an alert and says the reminder out loud.
+- **Keep a to-do list with reminders.** Say "remind me to call mom tomorrow at 6pm". Bolt shows an alert and says the reminder out loud when it's due.
 - **Search the web** for current info like news, weather and opening hours.
-
-No install and no build step. You open one HTML file in a browser.
 
 ## Run it
 
-1. Open `index.html` in **Google Chrome**.
+1. Double-click **`start.command`**. A Terminal window opens and Bolt opens in your browser at http://localhost:8765. Keep that Terminal window open while you use Bolt.
 2. Paste your Claude API key into Settings (⚙︎) and click **Save**.
 3. Type a message. Bolt answers and talks.
 
-Reminders only fire while the page is open, so keep the tab open in the background.
+Why the launcher: browsers won't load 3D models from a double-clicked HTML file, so Bolt needs a tiny local web server. `start.command` runs one with the Python built into macOS.
+
+Reminders only fire while the page is open.
 
 ## Get a Claude API key
 
@@ -25,21 +25,22 @@ Reminders only fire while the page is open, so keep the tab open in the backgrou
 3. Go to **API Keys** → **Create Key** and copy the key (it starts with `sk-ant-`).
 4. Paste it into Bolt's Settings.
 
-Your key, memories and to-dos are stored only in your own browser (localStorage). None of them goes into this repo.
+Your key, memories and to-dos are stored only in your own browser. None of them goes into this repo.
 
-## The face
+## How the avatar works
 
-`assets/face.jpg` is an AI-generated person who doesn't exist (StyleGAN2, from thispersondoesnotexist.com). The animation is simple:
-- **Blinking:** skin-colored eyelids drawn over the eyes (`.lid` in `style.css`).
-- **Talking:** a copy of the photo, masked to the mouth area, stretched while speaking (`.mouth` in `style.css`, `animateMouth()` in `app.js`).
+- `avatar.js` renders the model with [three.js](https://threejs.org/), loaded from a CDN.
+- **Lip-sync:** each spoken word is turned into mouth shapes ("visemes") by `vendor/lipsync-en.mjs`. The timing comes from the browser's speech engine as each word is spoken.
+- **Expressions:** moods (idle, thinking, listening, speaking) are made from the model's ARKit face blend shapes (`MOODS` in `avatar.js`).
 
-To use a different face, replace `assets/face.jpg` with a square, front-facing photo. Then adjust the eyelid positions and color (`--lid`, `.lid-l`, `.lid-r`) and the mouth position (`.mouth`) in `style.css`.
+To use a different avatar, replace `assets/avatar.glb` with any Ready Player Me–compatible GLB that has ARKit and Oculus viseme blend shapes. Avaturn T2 and MPFB avatars also work.
 
 ## Customize
 
 - **Name:** `NAME` at the top of `app.js`.
 - **Personality:** the text in `buildSystem()` in `app.js`.
 - **Voice:** pick one in Settings.
+- **Expressions and head motion:** `MOODS` and `POSES` in `avatar.js`.
 
 ## Talking with your voice
 
@@ -49,7 +50,16 @@ The 🎤 button works in Chrome once a microphone is connected (AirPods, a heads
 
 | File | What it does |
 |---|---|
-| `index.html` | Page layout: face, chat, to-do list, settings |
-| `style.css` | Colors, face overlays, animations |
+| `start.command` | Double-click to start Bolt |
+| `index.html` | Page layout: avatar, chat, to-do list, settings |
+| `style.css` | Colors and layout |
 | `app.js` | Claude API streaming, tools (memory, to-dos, web search), reminders, speech |
-| `assets/face.jpg` | The face photo |
+| `avatar.js` | 3D avatar: rendering, lip-sync, blinking, moods |
+| `assets/avatar.glb` | The 3D avatar model |
+| `vendor/lipsync-en.mjs` | English word to mouth-shape converter |
+
+## Credits and licenses
+
+- Avatar model `assets/avatar.glb` ("brunette") was made with Ready Player Me and comes from [TalkingHead](https://github.com/met4citizen/TalkingHead) v1.8.0. It is licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/), so personal, non-commercial use only.
+- `vendor/lipsync-en.mjs` is from [TalkingHead](https://github.com/met4citizen/TalkingHead) v1.8.0 by Mika Suominen, MIT License.
+- [three.js](https://threejs.org/), MIT License.

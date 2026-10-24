@@ -8,7 +8,8 @@
   --user: #3b82f6;
   --bot: #ffffff;
   --ring: #d6dce8;
-  --lid: #c39483;   /* eyelid skin tone, sampled from assets/face.jpg */
+  --stage-hi: #ffffff;
+  --stage-lo: #dde4f0;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -19,6 +20,8 @@
     --line: #33405a;
     --bot: #232b3d;
     --ring: #33405a;
+    --stage-hi: #34405a;
+    --stage-lo: #161b27;
   }
 }
 
@@ -58,55 +61,19 @@ body {
 /* ---------- avatar ---------- */
 .stage { display: flex; flex-direction: column; align-items: center; }
 .avatar {
-  width: min(210px, 48vw);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  padding: 5px;
-  background: var(--ring);
-  transition: background .3s;
-}
-.face {
   position: relative;
-  width: 100%; height: 100%;
-  border-radius: 50%;
+  width: 100%;
+  height: min(42vh, 380px);
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 30%, var(--stage-hi), var(--stage-lo));
+  box-shadow: inset 0 0 0 3px var(--ring);
   overflow: hidden;
-  animation: breathe 6s ease-in-out infinite;
+  transition: box-shadow .3s;
 }
-.face img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-@keyframes breathe {
-  0%, 100% { transform: translateY(0) rotate(0deg) scale(1.0); }
-  50% { transform: translateY(-1.5%) rotate(.6deg) scale(1.01); }
-}
-
-/* Mouth: same photo, softly masked to the mouth/chin area, stretched down from the upper lip. */
-.mouth {
-  position: absolute; inset: 0;
-  transform-origin: 50% 71.5%;
-  -webkit-mask-image: radial-gradient(ellipse 19% 12% at 50% 77%, #000 55%, transparent 100%);
-          mask-image: radial-gradient(ellipse 19% 12% at 50% 77%, #000 55%, transparent 100%);
-  will-change: transform;
-}
-
-/* Eyelids: skin-colored ovals that drop over each eye when blinking. */
-.lid {
-  position: absolute;
-  width: 8.6%; height: 3.4%;
-  border-radius: 50% 50% 45% 45%;
-  background: linear-gradient(to bottom, var(--lid) 62%, #7a5444 88%, #4a3029 100%);
-  filter: blur(.6px);
-  transform: scaleY(0);
-  transform-origin: 50% 0;
-  transition: transform 70ms ease-in;
-}
-.lid-l { left: calc(37.3% - 4.3%); top: calc(47.4% - 1.9%); }
-.lid-r { left: calc(62.8% - 4.3%); top: calc(47.0% - 1.9%); }
-.avatar.blink .lid { transform: scaleY(1); }
-
-/* state rings */
-.avatar.thinking { background: #fbbf24; animation: pulse 1s ease-in-out infinite alternate; }
-.avatar.speaking { background: #34d399; }
-.avatar.listening { background: var(--accent); }
-@keyframes pulse { from { background: #fbbf24; } to { background: #fde68a; } }
+.avatar canvas { display: block; width: 100%; height: 100%; }
+.avatar.thinking { box-shadow: inset 0 0 0 3px #fbbf24; }
+.avatar.speaking { box-shadow: inset 0 0 0 3px #34d399; }
+.avatar.listening { box-shadow: inset 0 0 0 3px var(--accent); }
 
 .status { margin: 6px 0 0; color: var(--muted); font-size: .95rem; min-height: 1.4em; text-align: center; }
 
